@@ -1,0 +1,8 @@
+*~
+CMakeLists.txt
+min
+vadd
+main
+
+cmake-build-debug/
+.idea/
