@@ -12,6 +12,10 @@ SRC1=$(BSN1).c
 SRC2=$(BSN2).c
 SRC3=$(BSN3).c
 
+HDR1=$(BSN1).h
+HDR2=$(BSN2).h
+HDR3=$(BSN3).h
+
 OBJ1=$(BSN1).o
 OBJ2=$(BSN2).o
 OBJ3=$(BSN3).o
@@ -33,7 +37,7 @@ $(OBJ1) : $(SRC1)
 $(OBJ2) : $(SRC2)
 	$(CC) -c $(CFLAGS) $(SRC2) -o $(OBJ2)
 
-$(OBJ3) : $(SRC3)
+$(OBJ3) : $(SRC3) $(HDR3)
 	$(CC) -c $(CFLAGS) $(SRC3) -o $(OBJ3)
 
 
