@@ -2,41 +2,32 @@
 //  Created by lefevre on 05/12/17.
 //  https://www.eriksmistad.no/getting-started-with-opencl-and-gpu-computing/
 //
-#include <stdio.h>
-#include <stdlib.h>
 
-#ifdef __APPLE__
-#include <OpenCL/opencl.h>
-#else
-#include <CL/cl.h>
-#endif
+#include "vector_addition.h"
 
-#define MAX_SOURCE_SIZE (0x100000)
+
+
+
 
 int main(void) {
     // Create the two input vectors
     int i;
-    const int LIST_SIZE = 1024;
-    int *A = (int*)malloc(sizeof(int)*LIST_SIZE);
-    int *B = (int*)malloc(sizeof(int)*LIST_SIZE);
+    const int LIST_SIZE = 10;
+    int *A = myvector_create(LIST_SIZE);
+    int *B = myvector_create(LIST_SIZE);
+    int *C = myvector_create(LIST_SIZE);
+
     for(i = 0; i < LIST_SIZE; i++) {
         A[i] = i;
         B[i] = LIST_SIZE - i;
     }
 
     // Load the kernel source code into the array source_str
-    FILE *fp;
-    char *source_str;
+
+    char *source_str = "vector_add_kernel.cl";
     size_t source_size;
 
-    fp = fopen("vector_add_kernel.cl", "r");
-    if (!fp) {
-        fprintf(stderr, "Failed to load kernel.\n");
-        exit(1);
-    }
-    source_str = (char*)malloc(MAX_SOURCE_SIZE);
-    source_size = fread( source_str, 1, MAX_SOURCE_SIZE, fp);
-    fclose( fp );
+    source_str = get_source_str(source_str, &source_size);
 
     // Get platform and device information
     cl_platform_id platform_id = NULL;
@@ -90,13 +81,13 @@ int main(void) {
             &global_item_size, &local_item_size, 0, NULL, NULL);
 
     // Read the memory buffer C on the device to the local variable C
-    int *C = (int*)malloc(sizeof(int)*LIST_SIZE);
+
     ret = clEnqueueReadBuffer(command_queue, c_mem_obj, CL_TRUE, 0,
             LIST_SIZE * sizeof(int), C, 0, NULL, NULL);
 
     // Display the result to the screen
     for(i = 0; i < LIST_SIZE; i++)
-        printf("%d + %d = %d\n", A[i], B[i], C[i]);
+        printf("(%d, %d) => %d\n", A[i], B[i], C[i]);
 
     // Clean up
     ret = clFlush(command_queue);
@@ -112,4 +103,23 @@ int main(void) {
     free(B);
     free(C);
     return 0;
+}
+
+int *myvector_create(int size)
+{
+    return (int*)malloc(sizeof(int)*LIST_SIZE);
+}
+
+char *get_source_str(char *fname_source, size_t *source_size)
+{
+    FILE *fp;
+    fp = fopen(fname_source, "r");
+    if (!fp) {
+        fprintf(stderr, "Failed to load kernel.\n");
+        exit(1);
+    }
+    char *source_str = (char*)malloc(MAX_SOURCE_SIZE);
+    source_size = fread(source_str, 1, MAX_SOURCE_SIZE, fp);
+    fclose(fp);
+    return source_str;
 }
